@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="VRES.life – VA Multi-Unit Property Search. Find duplex, triplex, and quadplex properties eligible for the VA Loan. Educating and assisting Veterans with Real Estate investing.">
+  <meta name="keywords" content="VA loan, multi-unit, duplex, triplex, quadplex, veteran real estate, VA mortgage, house hacking">
+  <title>VRES.life – VA Multi-Unit Property Search</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘</text></svg>">
+</head>
+<body>
+
+<!-- ===== DEMO BANNER ===== -->
+<div id="demo-banner" class="demo-banner">
+  ⚡ Demo Mode – showing sample listings.
+  <a onclick="document.getElementById('api-config-toggle').click(); document.getElementById('api-key-input').focus()">
+    Add your RapidAPI key
+  </a>
+  to search real MLS data.
+</div>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">🎖</div>
+      <div class="brand-text">
+        <h1>VR<span>ES</span>.life</h1>
+        <p>Educating &amp; Assisting Veterans with Real Estate Investing</p>
+      </div>
+    </div>
+    <div class="header-badges">
+      <span class="badge gold">★ VA Loan Eligible</span>
+      <span class="badge">🏠 Duplex / Triplex / Quadplex</span>
+      <span class="badge">$0 Down Payment</span>
+    </div>
+  </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<div class="hero">
+  <div class="hero-inner">
+    <p>
+      <strong>VA Multi-Unit Property Search</strong> —
+      Find 2–4 unit properties where you can live in one unit and let rental income help pay the mortgage.
+      No down payment required. No PMI. Only for eligible Veterans.
+    </p>
+    <div class="hero-cta">
+      <a href="#va-info" class="btn btn-outline btn-sm">📚 Learn VA Loans</a>
+      <a href="#calculator" class="btn btn-gold btn-sm">🧮 Calculator</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SEARCH PANEL ===== -->
+<div class="search-panel">
+  <div class="search-inner">
+    <div class="search-row">
+      <div class="form-group fg-location">
+        <label for="location-input">📍 Location (City, State or ZIP)</label>
+        <input id="location-input" type="text" placeholder="e.g. Austin, TX  or  78701" autocomplete="off">
+      </div>
+      <div class="form-group fg-type">
+        <label for="unit-type">Property Type</label>
+        <select id="unit-type">
+          <option value="all">All Multi-Unit</option>
+          <option value="duplex">Duplex (2 units)</option>
+          <option value="triplex">Triplex (3 units)</option>
+          <option value="quadplex">Quadplex (4 units)</option>
+        </select>
+      </div>
+      <div class="form-group fg-price">
+        <label for="min-price">Min Price</label>
+        <input id="min-price" type="text" placeholder="e.g. 200000">
+      </div>
+      <div class="form-group fg-price">
+        <label for="max-price">Max Price</label>
+        <input id="max-price" type="text" placeholder="e.g. 750000">
+      </div>
+      <div class="form-group fg-beds">
+        <label for="min-beds">Min Beds</label>
+        <select id="min-beds">
+          <option value="">Any</option>
+          <option value="2">2+</option>
+          <option value="4">4+</option>
+          <option value="6">6+</option>
+          <option value="8">8+</option>
+        </select>
+      </div>
+      <div class="search-actions">
+        <button id="search-btn" class="btn btn-primary">🔍  Search</button>
+        <button id="search-clear" class="btn btn-secondary">Clear</button>
+      </div>
+    </div>
+
+    <!-- API Config (collapsed by default) -->
+    <div class="api-config-row" style="margin-top:8px; align-items:center; display:flex; gap:10px; flex-wrap:wrap;">
+      <button id="api-config-toggle" class="btn btn-secondary btn-sm">⚙ API Settings</button>
+      <div id="api-config-row" class="form-group hidden" style="flex-direction:row; align-items:center; gap:8px;">
+        <label for="api-key-input" style="white-space:nowrap; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:#4A5568;">RapidAPI Key</label>
+        <input id="api-key-input" type="password" placeholder="Paste your RapidAPI key here…"
+               style="width:300px; font-family:monospace; font-size:.82rem; height:36px; border:1.5px solid #D1D9E6; border-radius:8px; padding:0 12px; outline:none;">
+      </div>
+      <span class="config-note">
+        Uses <strong>Zillow via RapidAPI</strong>.
+        <a href="https://rapidapi.com/apimaker/api/zillow-com1" target="_blank" rel="noopener">Get a free API key →</a>
+        &nbsp;·&nbsp; No key? Demo data loads automatically.
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN LAYOUT ===== -->
+<div class="main">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+
+    <!-- VA Loan Calculator -->
+    <div id="calculator" class="card">
+      <div class="card-header">
+        🧮 VA Loan Calculator
+      </div>
+      <div class="card-body">
+        <div class="calc-row">
+          <div class="calc-field">
+            <label>Purchase Price</label>
+            <input id="calc-price" type="text" value="400,000" placeholder="e.g. 400000">
+          </div>
+          <div class="calc-field">
+            <label>Down Payment %</label>
+            <input id="calc-down" type="number" value="0" min="0" max="100" step="0.5" placeholder="0">
+          </div>
+          <div class="calc-field">
+            <label>Interest Rate %</label>
+            <input id="calc-rate" type="number" value="6.5" min="1" max="20" step="0.125">
+          </div>
+          <div class="calc-field">
+            <label>Loan Term</label>
+            <div class="calc-toggle">
+              <div class="toggle-btn active" data-term="30">30 yr</div>
+              <div class="toggle-btn" data-term="20">20 yr</div>
+              <div class="toggle-btn" data-term="15">15 yr</div>
+            </div>
+            <input id="calc-term" type="hidden" value="30">
+          </div>
+          <div class="calc-field">
+            <label>VA Loan Use</label>
+            <select id="calc-use">
+              <option value="first">First Use</option>
+              <option value="subsequent">Subsequent Use</option>
+            </select>
+          </div>
+          <div class="calc-field" style="flex-direction:row; align-items:center; gap:8px;">
+            <input id="calc-exempt" type="checkbox" style="width:16px; height:16px; cursor:pointer;">
+            <label for="calc-exempt" style="text-transform:none; font-size:.82rem; cursor:pointer; color:#4A5568;">
+              Funding fee exempt<br>
+              <span style="font-size:.7rem; color:#8A97B0;">(disabled veteran / surviving spouse)</span>
+            </label>
+          </div>
+
+          <div class="calc-result">
+            <div class="calc-result-main" id="calc-payment">$2,527</div>
+            <div class="calc-result-label">estimated monthly payment (P&amp;I)</div>
+            <div class="calc-breakdown">
+              <div class="calc-breakdown-row">
+                <span>Down payment</span>
+                <span id="calc-down-amount">$0</span>
+              </div>
+              <div class="calc-breakdown-row">
+                <span>Total loan amount</span>
+                <span id="calc-loan-amount">$408,600</span>
+              </div>
+              <div class="calc-breakdown-row">
+                <span>VA Funding fee</span>
+                <span id="calc-funding-fee">$8,600</span>
+              </div>
+              <div class="calc-breakdown-row">
+                <span>Fee rate</span>
+                <span id="calc-fee-pct">2.15%</span>
+              </div>
+              <div class="calc-breakdown-row">
+                <span>Total paid (30 yr)</span>
+                <span id="calc-total-paid">$909,720</span>
+              </div>
+            </div>
+          </div>
+
+          <p style="font-size:.7rem; color:#8A97B0; text-align:center; margin-top:-4px;">
+            Estimate only. Does not include taxes, insurance, or HOA.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- VA Loan Benefits -->
+    <div id="va-info" class="card">
+      <div class="card-header red">
+        ★ VA Loan Multi-Unit Benefits
+      </div>
+      <div class="card-body">
+        <ul class="info-list">
+          <li><strong>$0 Down Payment</strong> — No down payment required with full entitlement</li>
+          <li><strong>No PMI</strong> — Save $100–$300+/month vs. conventional loans</li>
+          <li><strong>Rental Income Counts</strong> — 75% of gross rent offsets your DTI</li>
+          <li><strong>Competitive Rates</strong> — VA rates typically lower than conventional</li>
+          <li><strong>2–4 Units Eligible</strong> — Must occupy one unit as primary residence</li>
+          <li><strong>No Loan Limits</strong> — For veterans with full entitlement (since 2020)</li>
+          <li><strong>Funding Fee Financed</strong> — Roll it into the loan, pay nothing upfront</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Funding Fee Table -->
+    <div class="card">
+      <div class="card-header gold">⚡ 2024 VA Funding Fee Rates</div>
+      <div class="card-body" style="padding:0;">
+        <table class="fee-table">
+          <thead>
+            <tr>
+              <th>Use</th>
+              <th>Down Pmt</th>
+              <th>Fee</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td rowspan="3">First</td>
+              <td>&lt; 5%</td>
+              <td>2.15%</td>
+            </tr>
+            <tr>
+              <td>5–9.99%</td>
+              <td>1.50%</td>
+            </tr>
+            <tr>
+              <td>≥ 10%</td>
+              <td>1.25%</td>
+            </tr>
+            <tr>
+              <td rowspan="3">Subsequent</td>
+              <td>&lt; 5%</td>
+              <td>3.30%</td>
+            </tr>
+            <tr>
+              <td>5–9.99%</td>
+              <td>1.50%</td>
+            </tr>
+            <tr>
+              <td>≥ 10%</td>
+              <td>1.25%</td>
+            </tr>
+            <tr>
+              <td colspan="2">Disabled Vet / Surviving Spouse</td>
+              <td class="highlight">Exempt</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- House Hacking Explainer -->
+    <div class="card">
+      <div class="card-header">🏘 What is House Hacking?</div>
+      <div class="card-body">
+        <p style="font-size:.82rem; color:#4A5568; line-height:1.6;">
+          <strong>House hacking</strong> means buying a multi-unit property, living in one unit,
+          and renting out the others. As a Veteran, you can do this with <strong>$0 down</strong> using
+          your VA loan benefit.<br><br>
+          Example: Buy a <strong>4-plex for $400K</strong>.
+          Rent 3 units at $1,200/mo = <strong>$3,600/mo income</strong>. Your VA payment might be
+          ~$2,300/mo — meaning tenants pay your mortgage and you <em>build equity for free</em>.
+        </p>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ===== RESULTS AREA ===== -->
+  <section id="results-area" class="results-area">
+
+    <!-- Toolbar -->
+    <div id="results-toolbar" class="results-toolbar" style="display:none;">
+      <div id="result-count" class="results-count"></div>
+      <div class="results-toolbar-right">
+        <select id="sort-select" class="sort-select">
+          <option value="newest">Newest First</option>
+          <option value="price_asc">Price: Low → High</option>
+          <option value="price_desc">Price: High → Low</option>
+        </select>
+        <button id="export-btn" class="btn btn-secondary btn-sm">⬇ Export CSV</button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrapper">
+      <table id="results-table" class="prop-table">
+        <thead><tr></tr></thead>
+        <tbody id="results-tbody">
+          <tr>
+            <td colspan="10" style="padding:0">
+              <div class="state-panel">
+                <div class="state-icon">🏘</div>
+                <h3>Search for VA-Eligible Properties</h3>
+                <p>Enter a location above and click Search to find duplex, triplex, and quadplex listings eligible for the VA Loan.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div id="pagination" class="pagination" style="display:none;"></div>
+    </div>
+
+    <!-- Disclaimer -->
+    <p style="font-size:.72rem; color:#8A97B0; text-align:center; padding:0 12px;">
+      ★ VA loan eligibility requires Certificate of Eligibility (COE) and lender approval. Payment estimates are P&amp;I only and do not include property taxes, insurance, or HOA dues. Rental income estimates are approximate and not guaranteed. Always consult a licensed VA-approved lender and real estate professional. VRES.life is an educational resource for Veterans.
+    </p>
+
+  </section>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <p>
+    <strong style="color:#fff;">VRES.life</strong> &nbsp;·&nbsp;
+    "Educating and assisting Veterans with Real Estate Investing"
+  </p>
+  <p>
+    VA Loan data sourced via RapidAPI Zillow. &nbsp;·&nbsp;
+    Questions? <a href="mailto:info@vres.life">info@vres.life</a>
+  </p>
+  <p style="margin-top:10px; color:#4A5568; font-size:.7rem;">
+    Not affiliated with the U.S. Department of Veterans Affairs. Not financial or legal advice.
+    All estimates are for educational purposes only.
+  </p>
+</footer>
+
+<!-- ===== TOAST CONTAINER ===== -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- ===== SCRIPTS ===== -->
+<script src="js/vaLoan.js"></script>
+<script src="js/api.js"></script>
+<script src="js/table.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
