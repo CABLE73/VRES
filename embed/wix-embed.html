@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VRES.life – VA Multi-Unit Property Search</title>
+<style>
+/* ===== CSS RESET & ROOT ===== */
+:root {
+  --navy:       #1B2A47;
+  --navy-light: #243458;
+  --navy-mid:   #2F4070;
+  --red:        #B22234;
+  --red-light:  #CC2B3D;
+  --gold:       #C5960E;
+  --gold-light: #E8B520;
+  --white:      #FFFFFF;
+  --off-white:  #F7F9FC;
+  --gray-light: #EDF1F7;
+  --gray:       #D1D9E6;
+  --gray-mid:   #8A97B0;
+  --gray-dark:  #4A5568;
+  --text:       #1A202C;
+  --success:    #2D7A4F;
+  --radius:     7px;
+  --radius-lg:  12px;
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.10);
+  --shadow-md:  0 4px 10px rgba(0,0,0,.13);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:var(--off-white);
+  color:var(--text);
+  font-size:14px;
+  line-height:1.5;
+  padding:0;
+  margin:0;
+}
+
+/* ===== DEMO BANNER ===== */
+.demo-banner{
+  background:linear-gradient(90deg,#7C3AED,#4F46E5);
+  color:#fff;
+  text-align:center;
+  padding:6px 16px;
+  font-size:.75rem;
+  font-weight:600;
+}
+.demo-banner a{color:#E8B520;text-decoration:underline;cursor:pointer;}
+
+/* ===== HEADER ===== */
+.hdr{
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 100%);
+  color:#fff;
+  padding:14px 16px 12px;
+  position:relative;
+  overflow:hidden;
+}
+.hdr::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--red) 33%,#fff 33%,#fff 66%,#3C5EAB 66%);
+}
+.hdr-inner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand-icon{
+  width:42px;height:42px;background:var(--red);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,.3);
+}
+.brand-text h1{font-size:1.25rem;font-weight:800;letter-spacing:.5px;line-height:1.1;}
+.brand-text h1 span{color:var(--gold-light);}
+.brand-text p{font-size:.65rem;color:var(--gray);text-transform:uppercase;letter-spacing:1.2px;margin-top:1px;}
+.hdr-badges{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;}
+.badge{
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+  border-radius:20px;padding:3px 10px;font-size:.65rem;font-weight:600;
+  letter-spacing:.4px;white-space:nowrap;color:#fff;
+}
+.badge-gold{background:var(--gold);border-color:var(--gold);color:var(--navy);}
+
+/* ===== SEARCH PANEL ===== */
+.search-wrap{
+  background:#fff;
+  box-shadow:var(--shadow-sm);
+  border-bottom:1px solid var(--gray);
+  padding:12px 16px;
+}
+.search-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;}
+.fg{display:flex;flex-direction:column;gap:3px;}
+.fg label{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--gray-dark);}
+.fg input,.fg select{
+  height:38px;border:1.5px solid var(--gray);border-radius:var(--radius);
+  padding:0 10px;font-size:.85rem;color:var(--text);background:#fff;
+  transition:border-color .15s;outline:none;
+}
+.fg input:focus,.fg select:focus{border-color:var(--navy);box-shadow:0 0 0 2px rgba(27,42,71,.1);}
+.fg-loc{flex:1;min-width:160px;}
+.fg-type{width:155px;}
+.fg-price{width:130px;}
+.fg-beds{width:105px;}
+.search-actions{display:flex;gap:6px;align-items:flex-end;}
+
+/* API Config row */
+.api-row{
+  margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.config-note{font-size:.68rem;color:var(--gray-mid);}
+.config-note a{color:var(--navy);}
+#api-key-input{
+  width:260px;font-family:monospace;font-size:.8rem;height:34px;
+  border:1.5px solid var(--gray);border-radius:var(--radius);padding:0 10px;outline:none;
+}
+#api-key-input:focus{border-color:var(--navy);}
+
+/* ===== BUTTONS ===== */
+.btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:8px 14px;border-radius:var(--radius);font-size:.82rem;font-weight:600;
+  cursor:pointer;border:none;transition:all .15s;text-decoration:none;white-space:nowrap;
+}
+.btn-primary{background:var(--red);color:#fff;box-shadow:var(--shadow-sm);}
+.btn-primary:hover{background:var(--red-light);transform:translateY(-1px);}
+.btn-primary:disabled{opacity:.6;cursor:default;transform:none;}
+.btn-secondary{background:var(--gray-light);color:var(--navy);border:1.5px solid var(--gray);}
+.btn-secondary:hover{background:var(--gray);}
+.btn-sm{padding:5px 10px;font-size:.75rem;}
+.btn-ghost{background:none;border:1.5px solid rgba(255,255,255,.4);color:#fff;padding:4px 10px;font-size:.72rem;border-radius:var(--radius);cursor:pointer;}
+.btn-ghost:hover{background:rgba(255,255,255,.1);}
+
+/* ===== TOOLBAR ===== */
+.toolbar{
+  display:none;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:8px 0;
+}
+.result-count{font-size:.84rem;color:var(--gray-dark);}
+.result-count strong{color:var(--text);font-size:.95rem;}
+.toolbar-right{margin-left:auto;display:flex;gap:6px;align-items:center;}
+.sort-sel{
+  height:32px;border:1.5px solid var(--gray);border-radius:var(--radius);
+  padding:0 8px;font-size:.78rem;background:#fff;cursor:pointer;outline:none;
+}
+
+/* ===== TABLE WRAPPER ===== */
+.table-wrap{
+  background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);
+  border:1px solid var(--gray-light);overflow-x:auto;
+}
+
+/* ===== PROPERTY TABLE ===== */
+.prop-table{width:100%;border-collapse:collapse;font-size:.81rem;}
+.prop-table thead tr{background:var(--navy);color:#fff;}
+.prop-table th{
+  padding:10px 12px;text-align:left;font-size:.67rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;
+  cursor:pointer;user-select:none;transition:background .12s;
+}
+.prop-table th:not(.no-sort):hover{background:var(--navy-mid);}
+.prop-table th.sorted-asc::after {content:' ▲';color:var(--gold-light);font-size:8px;}
+.prop-table th.sorted-desc::after{content:' ▼';color:var(--gold-light);font-size:8px;}
+.prop-table td{padding:10px 12px;border-bottom:1px solid var(--gray-light);vertical-align:middle;}
+.prop-table tbody tr:last-child td{border-bottom:none;}
+.prop-table tbody tr:hover{background:#f0f4fa;}
+.col-num{width:32px;color:var(--gray-mid);font-size:.72rem;font-weight:600;text-align:center;}
+.col-addr{min-width:140px;}
+.addr-main{font-weight:600;color:var(--navy);font-size:.82rem;}
+.addr-sub{font-size:.71rem;color:var(--gray-dark);margin-top:1px;}
+.type-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.67rem;font-weight:700;white-space:nowrap;}
+.type-duplex  {background:#E3F2FD;color:#1565C0;}
+.type-triplex {background:#E8F5E9;color:#2E7D32;}
+.type-quadplex{background:#FFF8E1;color:#E65100;}
+.price-cell{font-weight:700;color:var(--text);white-space:nowrap;}
+.pay-cell{color:var(--success);font-weight:700;white-space:nowrap;}
+.rent-cell{color:var(--navy);font-weight:600;white-space:nowrap;font-size:.78rem;}
+.rent-est{font-size:.66rem;color:var(--gray-mid);}
+.act-cell a{
+  color:var(--navy);text-decoration:none;font-weight:600;font-size:.74rem;
+  padding:3px 7px;border:1.5px solid var(--navy);border-radius:var(--radius);
+  display:inline-block;transition:all .13s;
+}
+.act-cell a:hover{background:var(--navy);color:#fff;}
+
+/* ===== STATE PANEL ===== */
+.state-panel{text-align:center;padding:48px 20px;color:var(--gray-dark);}
+.state-icon{font-size:40px;margin-bottom:10px;}
+.state-panel h3{font-size:1rem;margin-bottom:5px;color:var(--text);}
+.state-panel p{font-size:.82rem;max-width:320px;margin:0 auto;}
+
+/* ===== SPINNER ===== */
+.spinner{
+  display:inline-block;width:32px;height:32px;
+  border:3px solid var(--gray);border-top-color:var(--navy);
+  border-radius:50%;animation:spin .7s linear infinite;margin-bottom:12px;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ===== PAGINATION ===== */
+.pagination{
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  padding:12px;border-top:1px solid var(--gray-light);flex-wrap:wrap;
+}
+.page-btn{
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--gray);border-radius:var(--radius);background:#fff;
+  font-size:.8rem;cursor:pointer;transition:all .13s;font-weight:600;color:var(--text);
+}
+.page-btn:hover{border-color:var(--navy);color:var(--navy);}
+.page-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.page-btn:disabled{opacity:.4;cursor:default;}
+
+/* ===== CALCULATOR PANEL ===== */
+.calc-panel{
+  background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);
+  border:1px solid var(--gray-light);overflow:hidden;margin-top:12px;
+}
+.calc-toggle-hdr{
+  background:var(--navy);color:#fff;padding:10px 16px;
+  display:flex;align-items:center;justify-content:space-between;cursor:pointer;
+  font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
+  user-select:none;
+}
+.calc-toggle-hdr:hover{background:var(--navy-mid);}
+.calc-body{padding:14px;display:none;}
+.calc-body.open{display:block;}
+
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.calc-field{display:flex;flex-direction:column;gap:3px;}
+.calc-field label{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gray-dark);}
+.calc-field input,.calc-field select{
+  height:34px;border:1.5px solid var(--gray);border-radius:var(--radius);
+  padding:0 9px;font-size:.84rem;outline:none;transition:border-color .13s;
+}
+.calc-field input:focus,.calc-field select:focus{border-color:var(--navy);}
+.calc-field-full{grid-column:1/-1;}
+.term-toggle{display:flex;gap:5px;}
+.term-btn{
+  flex:1;padding:5px 4px;border:1.5px solid var(--gray);border-radius:var(--radius);
+  background:#fff;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .13s;
+  color:var(--gray-dark);text-align:center;
+}
+.term-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.exempt-row{display:flex;align-items:center;gap:7px;grid-column:1/-1;}
+.exempt-row input[type=checkbox]{width:15px;height:15px;cursor:pointer;flex-shrink:0;}
+.exempt-row label{font-size:.78rem;color:var(--gray-dark);cursor:pointer;text-transform:none;letter-spacing:0;}
+
+.calc-result{
+  background:var(--navy);color:#fff;border-radius:var(--radius);
+  padding:12px;margin-top:10px;
+}
+.calc-main-val{font-size:1.5rem;font-weight:800;color:var(--gold-light);text-align:center;line-height:1;}
+.calc-main-lbl{font-size:.68rem;text-align:center;color:var(--gray);margin-top:2px;}
+.calc-breakdown{
+  margin-top:9px;border-top:1px solid rgba(255,255,255,.15);
+  padding-top:9px;display:flex;flex-direction:column;gap:4px;
+}
+.calc-row{display:flex;justify-content:space-between;font-size:.72rem;}
+.calc-row span:first-child{color:var(--gray);}
+.calc-row span:last-child{color:#fff;font-weight:600;}
+.calc-note{font-size:.66rem;color:var(--gray-mid);text-align:center;margin-top:6px;}
+
+/* ===== FOOTER ===== */
+.ftr{
+  background:var(--navy);color:var(--gray);padding:12px 16px;
+  text-align:center;font-size:.7rem;margin-top:12px;border-radius:var(--radius);
+}
+.ftr a{color:var(--gold-light);text-decoration:none;}
+.ftr p+p{margin-top:4px;}
+.disclaimer{font-size:.65rem;color:var(--gray-mid);text-align:center;padding:8px 12px 4px;}
+
+/* ===== TOAST ===== */
+.toast-container{position:fixed;bottom:16px;right:16px;display:flex;flex-direction:column;gap:6px;z-index:999;}
+.toast{
+  background:var(--navy);color:#fff;padding:10px 15px;border-radius:var(--radius);
+  box-shadow:0 4px 16px rgba(0,0,0,.2);font-size:.8rem;max-width:280px;
+  animation:slideIn .22s ease;
+}
+.toast.error{background:var(--red);}
+.toast.success{background:var(--success);}
+@keyframes slideIn{from{transform:translateX(30px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+/* ===== UTILITY ===== */
+.hidden{display:none!important;}
+.mt-2{margin-top:8px;}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:600px){
+  .search-row{flex-direction:column;}
+  .fg-loc,.fg-type,.fg-price,.fg-beds{width:100%;}
+  .hdr-badges{display:none;}
+  .prop-table th:nth-child(6),.prop-table td:nth-child(6){display:none;}
+}
+@media(max-width:480px){
+  .calc-grid{grid-template-columns:1fr;}
+  .calc-field-full{grid-column:1;}
+  .exempt-row{grid-column:1;}
+}
+</style>
+</head>
+<body>
+
+<!-- DEMO BANNER -->
+<div id="demo-banner" class="demo-banner">
+  Demo Mode – showing sample listings.
+  <a onclick="toggleApiPanel()">Add your RapidAPI key</a>
+  to search live Zillow data.
+</div>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-inner">
+    <div class="brand">
+      <div class="brand-icon">🎖</div>
+      <div class="brand-text">
+        <h1>VR<span>ES</span>.life</h1>
+        <p>Educating &amp; Assisting Veterans with Real Estate Investing</p>
+      </div>
+    </div>
+    <div class="hdr-badges">
+      <span class="badge badge-gold">★ VA Loan Eligible</span>
+      <span class="badge">Duplex · Triplex · Quadplex</span>
+      <span class="badge">$0 Down</span>
+    </div>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-wrap">
+  <div class="search-row">
+    <div class="fg fg-loc">
+      <label for="loc">📍 Location (City, State or ZIP)</label>
+      <input id="loc" type="text" placeholder="e.g. Austin, TX  or  78701" autocomplete="off">
+    </div>
+    <div class="fg fg-type">
+      <label for="unit-type">Property Type</label>
+      <select id="unit-type">
+        <option value="all">All Multi-Unit</option>
+        <option value="duplex">Duplex (2 units)</option>
+        <option value="triplex">Triplex (3 units)</option>
+        <option value="quadplex">Quadplex (4 units)</option>
+      </select>
+    </div>
+    <div class="fg fg-price">
+      <label for="min-price">Min Price</label>
+      <input id="min-price" type="text" placeholder="200000">
+    </div>
+    <div class="fg fg-price">
+      <label for="max-price">Max Price</label>
+      <input id="max-price" type="text" placeholder="750000">
+    </div>
+    <div class="fg fg-beds">
+      <label for="min-beds">Min Beds</label>
+      <select id="min-beds">
+        <option value="">Any</option>
+        <option value="2">2+</option>
+        <option value="4">4+</option>
+        <option value="6">6+</option>
+        <option value="8">8+</option>
+      </select>
+    </div>
+    <div class="search-actions">
+      <button id="search-btn" class="btn btn-primary" onclick="doSearch()">🔍 Search</button>
+      <button class="btn btn-secondary" onclick="clearSearch()">Clear</button>
+    </div>
+  </div>
+
+  <!-- API Config -->
+  <div class="api-row">
+    <button class="btn btn-secondary btn-sm" onclick="toggleApiPanel()">⚙ API Settings</button>
+    <div id="api-panel" class="hidden" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span style="font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--gray-dark);white-space:nowrap;">RapidAPI Key</span>
+      <input id="api-key-input" type="password" placeholder="Paste your RapidAPI key here…">
+    </div>
+    <span class="config-note">
+      Zillow via RapidAPI.
+      <a href="https://rapidapi.com/apimaker/api/zillow-com1" target="_blank" rel="noopener">Get free key →</a>
+      &nbsp;·&nbsp; No key? Demo data loads automatically.
+    </span>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div id="toolbar" class="toolbar" style="padding:8px 0;display:none;">
+  <div id="result-count" class="result-count"></div>
+  <div class="toolbar-right">
+    <select id="sort-sel" class="sort-sel" onchange="onSortChange()">
+      <option value="newest">Newest First</option>
+      <option value="price_asc">Price: Low → High</option>
+      <option value="price_desc">Price: High → Low</option>
+    </select>
+    <button class="btn btn-secondary btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+  </div>
+</div>
+
+<!-- RESULTS TABLE -->
+<div class="table-wrap">
+  <table id="results-table" class="prop-table">
+    <thead>
+      <tr id="table-head"></tr>
+    </thead>
+    <tbody id="results-tbody">
+      <tr>
+        <td colspan="8" style="padding:0">
+          <div class="state-panel">
+            <div class="state-icon">🏘</div>
+            <h3>Search for VA-Eligible Properties</h3>
+            <p>Enter a location above and click Search to find duplex, triplex, and quadplex listings eligible for the VA Loan.</p>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div id="pagination" class="pagination" style="display:none;"></div>
+</div>
+
+<p class="disclaimer">
+  ★ VA loan eligibility requires a Certificate of Eligibility (COE) and lender approval. Payment estimates are P&amp;I only — they do not include taxes, insurance, or HOA. Rental income estimates are approximate. Always consult a licensed VA-approved lender and real estate professional. VRES.life is an educational resource for Veterans.
+</p>
+
+<!-- VA LOAN CALCULATOR (COLLAPSIBLE) -->
+<div class="calc-panel">
+  <div class="calc-toggle-hdr" onclick="toggleCalc()">
+    <span>🧮 VA Loan Calculator</span>
+    <span id="calc-toggle-arrow">▼ Expand</span>
+  </div>
+  <div id="calc-body" class="calc-body">
+    <div class="calc-grid">
+      <div class="calc-field">
+        <label>Purchase Price ($)</label>
+        <input id="calc-price" type="text" value="400,000" oninput="updateCalc()">
+      </div>
+      <div class="calc-field">
+        <label>Down Payment %</label>
+        <input id="calc-down" type="number" value="0" min="0" max="100" step="0.5" oninput="updateCalc()">
+      </div>
+      <div class="calc-field">
+        <label>Interest Rate %</label>
+        <input id="calc-rate" type="number" value="6.5" min="1" max="20" step="0.125" oninput="updateCalc()">
+      </div>
+      <div class="calc-field">
+        <label>Loan Term</label>
+        <div class="term-toggle">
+          <div class="term-btn active" data-term="30" onclick="setTerm(this)">30 yr</div>
+          <div class="term-btn" data-term="20" onclick="setTerm(this)">20 yr</div>
+          <div class="term-btn" data-term="15" onclick="setTerm(this)">15 yr</div>
+        </div>
+        <input id="calc-term" type="hidden" value="30">
+      </div>
+      <div class="calc-field">
+        <label>VA Loan Use</label>
+        <select id="calc-use" onchange="updateCalc()">
+          <option value="first">First Use</option>
+          <option value="subsequent">Subsequent Use</option>
+        </select>
+      </div>
+      <div class="exempt-row">
+        <input id="calc-exempt" type="checkbox" onchange="updateCalc()">
+        <label for="calc-exempt">
+          Funding fee exempt
+          <span style="display:block;font-size:.66rem;color:var(--gray-mid);">(disabled veteran / surviving spouse)</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="calc-result">
+      <div class="calc-main-val" id="calc-payment">$2,527</div>
+      <div class="calc-main-lbl">estimated monthly payment (P&amp;I)</div>
+      <div class="calc-breakdown">
+        <div class="calc-row"><span>Down payment</span><span id="cb-down">$0</span></div>
+        <div class="calc-row"><span>Total loan amount</span><span id="cb-loan">$408,600</span></div>
+        <div class="calc-row"><span>VA Funding fee</span><span id="cb-fee">$8,600</span></div>
+        <div class="calc-row"><span>Fee rate</span><span id="cb-fee-pct">2.15%</span></div>
+        <div class="calc-row"><span id="cb-total-lbl">Total paid (30 yr)</span><span id="cb-total">$909,720</span></div>
+      </div>
+    </div>
+    <p class="calc-note">Estimate only. Does not include property taxes, homeowners insurance, or HOA dues.</p>
+
+    <!-- Funding Fee Reference -->
+    <div style="margin-top:12px;">
+      <div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--gray-dark);margin-bottom:6px;">2024 VA Funding Fee Rates</div>
+      <table style="width:100%;border-collapse:collapse;font-size:.75rem;">
+        <thead>
+          <tr style="background:var(--gray-light);">
+            <th style="padding:5px 8px;text-align:left;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--gray-dark);">Use</th>
+            <th style="padding:5px 8px;text-align:left;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--gray-dark);">Down Pmt</th>
+            <th style="padding:5px 8px;text-align:left;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--gray-dark);">Fee</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="padding:4px 8px;border-bottom:1px solid var(--gray-light);" rowspan="3">First</td><td style="padding:4px 8px;border-bottom:1px solid var(--gray-light);">&lt; 5%</td><td style="padding:4px 8px;border-bottom:1px solid var(--gray-light);">2.15%</td></tr>
+          <tr><td style="padding:4px 8px;border-bottom:1px solid var(--gray-light);">5–9.99%</td><td style="padding:4px 8px;border-bottom:1px solid var(--gray-light);">1.50%</td></tr>
+          <tr><td style="padding:4px 8px;border-bottom:1px solid var(--gray-light);">≥ 10%</td><td style="padding:4px 8px;border-bottom:1px solid var(--gray-light);">1.25%</td></tr>
+          <tr><td style="padding:4px 8px;border-bottom:1px solid var(--gray-light);" rowspan="3">Subs.</td><td style="padding:4px 8px;border-bottom:1px solid var(--gray-light);">&lt; 5%</td><td style="padding:4px 8px;border-bottom:1px solid var(--gray-light);">3.30%</td></tr>
+          <tr><td style="padding:4px 8px;border-bottom:1px solid var(--gray-light);">5–9.99%</td><td style="padding:4px 8px;border-bottom:1px solid var(--gray-light);">1.50%</td></tr>
+          <tr><td style="padding:4px 8px;border-bottom:1px solid var(--gray-light);">≥ 10%</td><td style="padding:4px 8px;border-bottom:1px solid var(--gray-light);">1.25%</td></tr>
+          <tr><td style="padding:4px 8px;" colspan="2">Disabled Vet / Surviving Spouse</td><td style="padding:4px 8px;color:var(--success);font-weight:700;">Exempt</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="ftr">
+  <p><strong style="color:#fff;">VRES.life</strong> &nbsp;·&nbsp; "Educating and assisting Veterans with Real Estate Investing"</p>
+  <p>Data via Zillow / RapidAPI. Questions? <a href="mailto:info@vres.life">info@vres.life</a></p>
+  <p style="margin-top:6px;color:var(--gray-mid);font-size:.65rem;">Not affiliated with the U.S. Department of Veterans Affairs. Not financial or legal advice. All estimates are for educational purposes only.</p>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+
+<script>
+/* =============================================
+   MODULE: VALoan
+   VA funding fee calculations & monthly payment
+   ============================================= */
+const VALoan = (() => {
+
+  const FEES = {
+    first:      { low: 0.0215, mid: 0.0150, high: 0.0125 },
+    subsequent: { low: 0.0330, mid: 0.0150, high: 0.0125 },
+  };
+
+  function getFeeRate(useType, downPct) {
+    const tier = downPct >= 0.10 ? 'high' : downPct >= 0.05 ? 'mid' : 'low';
+    return FEES[useType][tier];
+  }
+
+  function monthlyPayment(principal, annualRate, termYears) {
+    if (annualRate === 0) return principal / (termYears * 12);
+    const r = annualRate / 12;
+    const n = termYears * 12;
+    return principal * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+  }
+
+  function calculate(params) {
+    const {
+      purchasePrice,
+      downPaymentPct = 0,
+      annualRate     = 0.065,
+      termYears      = 30,
+      useType        = 'first',
+      exempt         = false,
+    } = params;
+
+    const downPayment  = purchasePrice * downPaymentPct;
+    const baseLoan     = purchasePrice - downPayment;
+    const feeRate      = exempt ? 0 : getFeeRate(useType, downPaymentPct);
+    const fundingFee   = baseLoan * feeRate;
+    const totalLoan    = baseLoan + fundingFee;
+    const payment      = monthlyPayment(totalLoan, annualRate, termYears);
+    const totalPaid    = payment * termYears * 12;
+    const totalInterest = totalPaid - totalLoan;
+
+    return {
+      purchasePrice, downPayment, downPaymentPct,
+      baseLoan, feeRate, fundingFee, totalLoan,
+      annualRate, termYears,
+      monthlyPayment: payment,
+      totalPaid, totalInterest, exempt,
+    };
+  }
+
+  function estimateRentalIncome(purchasePrice, units) {
+    const grossMonthly = purchasePrice * 0.007;
+    const perUnit      = grossMonthly / units;
+    const rentableUnits = units - 1;
+    const monthly      = perUnit * rentableUnits;
+    const annual       = monthly * 12;
+    const capRate      = annual / purchasePrice;
+    return {
+      perUnit: Math.round(perUnit),
+      rentableUnits,
+      monthly:  Math.round(monthly),
+      annual:   Math.round(annual),
+      capRate,
+    };
+  }
+
+  function unitLabel(units) {
+    return { 2: 'Duplex', 3: 'Triplex', 4: 'Quadplex' }[units] || `${units}-Unit`;
+  }
+
+  function unitBadgeClass(units) {
+    return { 2: 'type-duplex', 3: 'type-triplex', 4: 'type-quadplex' }[units] || 'type-multi';
+  }
+
+  function detectUnits(homeType, description) {
+    const text = `${homeType || ''} ${description || ''}`.toLowerCase();
+    if (/quadplex|quad[- ]?plex|4[- ]?plex|four[- ]?plex|4[- ]?unit/.test(text)) return 4;
+    if (/triplex|tri[- ]?plex|3[- ]?plex|three[- ]?plex|3[- ]?unit/.test(text))  return 3;
+    if (/duplex|du[- ]?plex|2[- ]?plex|two[- ]?plex|2[- ]?unit/.test(text))      return 2;
+    return null;
+  }
+
+  return { calculate, monthlyPayment, estimateRentalIncome, unitLabel, unitBadgeClass, detectUnits, getFeeRate };
+})();
+
+
+/* =============================================
+   MODULE: PropertyAPI
+   Zillow RapidAPI integration + mock data fallback
+   ============================================= */
+const PropertyAPI = (() => {
+
+  const ZILLOW_HOST = 'zillow-com1.p.rapidapi.com';
+
+  async function search(params) {
+    const { apiKey } = params;
+    if (!apiKey || apiKey.trim() === '') {
+      const data = getMockData(params);
+      return { properties: data, total: data.length, demo: true };
+    }
+    try {
+      const result = await searchZillow(params);
+      return { ...result, demo: false };
+    } catch (err) {
+      console.warn('Zillow API error, falling back to mock:', err.message);
+      const data = getMockData(params);
+      return { properties: data, total: data.length, demo: true, error: err.message };
+    }
+  }
+
+  async function searchZillow({ location, unitType, minPrice, maxPrice, minBeds, sort, page = 1, apiKey }) {
+    const sortMap = { price_asc: 'Price_Low_High', price_desc: 'Price_High_Low', newest: 'Newest' };
+    const qs = new URLSearchParams({
+      location: location || 'Austin, TX',
+      home_type: 'Multi-family',
+      ...(minPrice && { minPrice: String(minPrice) }),
+      ...(maxPrice && { maxPrice: String(maxPrice) }),
+      ...(minBeds  && { bedsMin: String(minBeds)  }),
+      sort: sortMap[sort] || 'Newest',
+      page: String(page),
+    });
+
+    const res = await fetch(`https://${ZILLOW_HOST}/propertyExtendedSearch?${qs}`, {
+      headers: {
+        'X-RapidAPI-Key':  apiKey,
+        'X-RapidAPI-Host': ZILLOW_HOST,
+      },
+    });
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error(`Zillow ${res.status}: ${body.slice(0, 100)}`);
+    }
+
+    const data = await res.json();
+    const raw  = data.props || [];
+
+    const properties = raw
+      .map(normalizeZillow)
+      .filter(p => {
+        if (unitType === 'all') return true;
+        const map = { duplex: 2, triplex: 3, quadplex: 4 };
+        return p.units === map[unitType];
+      });
+
+    return { properties, total: data.totalResultCount || properties.length };
+  }
+
+  function normalizeZillow(raw) {
+    const units  = VALoan.detectUnits(raw.homeType, raw.address);
+    const loan   = units ? VALoan.calculate({ purchasePrice: raw.price || 0 }) : null;
+    const rental = units ? VALoan.estimateRentalIncome(raw.price || 0, units) : null;
+    return {
+      zpid:    raw.zpid,
+      address: parseAddr(raw.address),
+      price:   raw.price || 0,
+      beds:    raw.bedrooms || '–',
+      baths:   raw.bathrooms || '–',
+      sqft:    raw.livingArea || null,
+      units,
+      homeType: raw.homeType,
+      imgSrc:   raw.imgSrc || null,
+      detailUrl: raw.detailUrl ? `https://www.zillow.com${raw.detailUrl}` : null,
+      monthlyPayment: loan ? loan.monthlyPayment : null,
+      fundingFee:     loan ? loan.fundingFee : null,
+      rentalIncome:   rental,
+      vaEligible:     units !== null && units >= 2 && units <= 4,
+    };
+  }
+
+  function parseAddr(full) {
+    if (!full) return { street: 'Unknown', cityState: '' };
+    const parts = full.split(',').map(s => s.trim());
+    return { street: parts[0] || full, cityState: parts.slice(1).join(', ') };
+  }
+
+  /* ---------- MOCK DATA: ~10 Texas Properties ---------- */
+  function getMockData({ unitType = 'all', minPrice = 0, maxPrice = Infinity, minBeds = 0, sort = 'newest' } = {}) {
+    const all = MOCK_LISTINGS.filter(p => {
+      if (p.price < minPrice || p.price > maxPrice) return false;
+      if (p.beds < minBeds) return false;
+      if (unitType !== 'all') {
+        const map = { duplex: 2, triplex: 3, quadplex: 4 };
+        if (p.units !== map[unitType]) return false;
+      }
+      return true;
+    });
+
+    if (sort === 'price_asc')  all.sort((a, b) => a.price - b.price);
+    if (sort === 'price_desc') all.sort((a, b) => b.price - a.price);
+
+    return all.map(p => {
+      const loan   = VALoan.calculate({ purchasePrice: p.price });
+      const rental = VALoan.estimateRentalIncome(p.price, p.units);
+      return {
+        ...p,
+        monthlyPayment: loan.monthlyPayment,
+        fundingFee:     loan.fundingFee,
+        rentalIncome:   rental,
+        vaEligible:     true,
+        detailUrl:      null,
+        imgSrc:         null,
+      };
+    });
+  }
+
+  const MOCK_LISTINGS = [
+    {
+      zpid: 'mock-1',
+      address: { street: '1842 Oak Grove Ln', cityState: 'Austin, TX 78702' },
+      price: 485000, beds: 4, baths: 3, sqft: 2100, units: 2, homeType: 'Duplex',
+    },
+    {
+      zpid: 'mock-2',
+      address: { street: '3310 Magnolia Blvd', cityState: 'San Antonio, TX 78201' },
+      price: 310000, beds: 6, baths: 4, sqft: 2600, units: 3, homeType: 'Triplex',
+    },
+    {
+      zpid: 'mock-3',
+      address: { street: '509 Veteran Way', cityState: 'Dallas, TX 75201' },
+      price: 620000, beds: 8, baths: 6, sqft: 3800, units: 4, homeType: 'Quadplex',
+    },
+    {
+      zpid: 'mock-4',
+      address: { street: '7712 Patriot Dr', cityState: 'Houston, TX 77001' },
+      price: 390000, beds: 4, baths: 2.5, sqft: 1900, units: 2, homeType: 'Duplex',
+    },
+    {
+      zpid: 'mock-5',
+      address: { street: '2205 Liberty St', cityState: 'Fort Worth, TX 76101' },
+      price: 275000, beds: 6, baths: 3, sqft: 2200, units: 3, homeType: 'Triplex',
+    },
+    {
+      zpid: 'mock-6',
+      address: { street: '4490 Freedom Ave', cityState: 'El Paso, TX 79901' },
+      price: 349000, beds: 8, baths: 4, sqft: 3200, units: 4, homeType: 'Quadplex',
+    },
+    {
+      zpid: 'mock-7',
+      address: { street: '815 Ranger Ct', cityState: 'Corpus Christi, TX 78401' },
+      price: 298000, beds: 4, baths: 2, sqft: 1750, units: 2, homeType: 'Duplex',
+    },
+    {
+      zpid: 'mock-8',
+      address: { street: '1122 Eagle Pass Rd', cityState: 'Killeen, TX 76541' },
+      price: 255000, beds: 6, baths: 3, sqft: 2050, units: 3, homeType: 'Triplex',
+    },
+    {
+      zpid: 'mock-9',
+      address: { street: '3380 Valor Blvd', cityState: 'Waco, TX 76701' },
+      price: 415000, beds: 8, baths: 5, sqft: 3400, units: 4, homeType: 'Quadplex',
+    },
+    {
+      zpid: 'mock-10',
+      address: { street: '660 Stars & Stripes Dr', cityState: 'San Marcos, TX 78666' },
+      price: 520000, beds: 4, baths: 3, sqft: 2350, units: 2, homeType: 'Duplex',
+    },
+    {
+      zpid: 'mock-11',
+      address: { street: '228 Honor Guard Ln', cityState: 'Lubbock, TX 79401' },
+      price: 195000, beds: 6, baths: 3, sqft: 1980, units: 3, homeType: 'Triplex',
+    },
+    {
+      zpid: 'mock-12',
+      address: { street: '5501 Blue Star Hwy', cityState: 'Amarillo, TX 79101' },
+      price: 289000, beds: 8, baths: 4, sqft: 2900, units: 4, homeType: 'Quadplex',
+    },
+    {
+      zpid: 'mock-13',
+      address: { street: '917 Service Member Blvd', cityState: 'Plano, TX 75023' },
+      price: 445000, beds: 4, baths: 2.5, sqft: 2000, units: 2, homeType: 'Duplex',
+    },
+    {
+      zpid: 'mock-14',
+      address: { street: '342 Battalion Rd', cityState: 'San Antonio, TX 78240' },
+      price: 650000, beds: 8, baths: 6, sqft: 4100, units: 4, homeType: 'Quadplex',
+    },
+  ];
+
+  return { search };
+})();
+
+
+/* =============================================
+   MODULE: Table
+   Results table rendering & client-side sort
+   ============================================= */
+const Table = (() => {
+
+  let _sortKey = null;
+  let _sortDir = 'asc';
+
+  const COLS = [
+    { key: 'num',     label: '#',                sort: false, cls: 'col-num' },
+    { key: 'address', label: 'Address',          sort: true,  cls: 'col-addr' },
+    { key: 'type',    label: 'Type',             sort: true  },
+    { key: 'price',   label: 'List Price',       sort: true  },
+    { key: 'beds',    label: 'Bd / Ba',          sort: true  },
+    { key: 'payment', label: 'Est. VA Pmt/mo',   sort: true  },
+    { key: 'rental',  label: 'Est. Rental/mo',   sort: true  },
+    { key: 'actions', label: 'Link',             sort: false },
+  ];
+
+  function buildHeaders() {
+    const tr = document.getElementById('table-head');
+    if (!tr) return;
+    tr.innerHTML = COLS.map(col =>
+      `<th class="${col.sort ? '' : 'no-sort'} ${col.cls || ''}" data-key="${col.key}">${col.label}</th>`
+    ).join('');
+
+    tr.querySelectorAll('th[data-key]').forEach(th => {
+      if (th.classList.contains('no-sort')) return;
+      th.addEventListener('click', () => {
+        const key = th.dataset.key;
+        if (_sortKey === key) _sortDir = _sortDir === 'asc' ? 'desc' : 'asc';
+        else { _sortKey = key; _sortDir = 'asc'; }
+        updateSortIndicators();
+        App.applyClientSort();
+      });
+    });
+  }
+
+  function updateSortIndicators() {
+    document.querySelectorAll('#results-table th').forEach(th => {
+      th.classList.remove('sorted-asc', 'sorted-desc');
+      if (th.dataset.key === _sortKey) {
+        th.classList.add(_sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc');
+      }
+    });
+  }
+
+  function render(properties, startNum) {
+    const tbody = document.getElementById('results-tbody');
+    if (!tbody) return;
+
+    if (!properties.length) {
+      tbody.innerHTML = `<tr><td colspan="${COLS.length}" style="padding:0">
+        <div class="state-panel">
+          <div class="state-icon">🏠</div>
+          <h3>No properties found</h3>
+          <p>Try adjusting your filters or searching a different location.</p>
+        </div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = properties.map((p, i) => buildRow(p, (startNum || 1) + i)).join('');
+  }
+
+  function buildRow(p, num) {
+    const units     = p.units;
+    const label     = units ? VALoan.unitLabel(units) : 'Multi-family';
+    const badgeCls  = units ? VALoan.unitBadgeClass(units) : 'type-multi';
+    const price     = fmtCur(p.price);
+    const payment   = p.monthlyPayment ? fmtCur(p.monthlyPayment) + '/mo' : '–';
+    const rental    = p.rentalIncome   ? fmtCur(p.rentalIncome.monthly) + '/mo' : '–';
+    const rentNote  = p.rentalIncome   ? `(${p.rentalIncome.rentableUnits} unit${p.rentalIncome.rentableUnits > 1 ? 's' : ''} rented)` : '';
+
+    const linkCell = p.detailUrl
+      ? `<a href="${esc(p.detailUrl)}" target="_blank" rel="noopener">View ↗</a>`
+      : `<a href="#" onclick="App.loadCalc('${esc(p.zpid)}');return false">Estimate</a>`;
+
+    return `<tr data-zpid="${esc(p.zpid)}">
+      <td class="col-num">${num}</td>
+      <td class="col-addr">
+        <div class="addr-main">${esc(p.address.street)}</div>
+        <div class="addr-sub">${esc(p.address.cityState)}</div>
+      </td>
+      <td><span class="type-badge ${badgeCls}">${label}</span></td>
+      <td class="price-cell">${price}</td>
+      <td>${p.beds}bd / ${p.baths}ba</td>
+      <td class="pay-cell">${payment}</td>
+      <td class="rent-cell">${rental}${rentNote ? `<div class="rent-est">${rentNote} est.</div>` : ''}</td>
+      <td class="act-cell">${linkCell}</td>
+    </tr>`;
+  }
+
+  function sortData(props, key, dir) {
+    const sorted = [...props];
+    const mult   = dir === 'asc' ? 1 : -1;
+    const val = p => {
+      switch (key) {
+        case 'address': return p.address.street.toLowerCase();
+        case 'type':    return p.units || 0;
+        case 'price':   return p.price;
+        case 'beds':    return parseFloat(p.beds) || 0;
+        case 'payment': return p.monthlyPayment || 0;
+        case 'rental':  return p.rentalIncome ? p.rentalIncome.monthly : 0;
+        default: return 0;
+      }
+    };
+    sorted.sort((a, b) => {
+      const va = val(a), vb = val(b);
+      if (typeof va === 'string') return va.localeCompare(vb) * mult;
+      return (va - vb) * mult;
+    });
+    return sorted;
+  }
+
+  function exportCSV(properties) {
+    const hdrs = ['#','Address','City/State','Type','List Price','Beds','Baths','Est VA Pmt/mo','Funding Fee','Est Rental/mo','Rentable Units'];
+    const rows = properties.map((p, i) => [
+      i + 1,
+      p.address.street,
+      p.address.cityState,
+      p.units ? VALoan.unitLabel(p.units) : 'Multi-family',
+      p.price,
+      p.beds, p.baths,
+      p.monthlyPayment ? Math.round(p.monthlyPayment) : '',
+      p.fundingFee     ? Math.round(p.fundingFee)     : '',
+      p.rentalIncome   ? p.rentalIncome.monthly        : '',
+      p.rentalIncome   ? p.rentalIncome.rentableUnits  : '',
+    ]);
+    const csv = [hdrs, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement('a'), {
+      href: url, download: `VRES-VA-Properties-${new Date().toISOString().slice(0,10)}.csv`,
+    });
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function fmtCur(n) { return n ? '$' + Math.round(n).toLocaleString('en-US') : '–'; }
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  return { buildHeaders, render, sortData, exportCSV, getSortKey: () => _sortKey, getSortDir: () => _sortDir };
+})();
+
+
+/* =============================================
+   MODULE: App
+   Application controller
+   ============================================= */
+const App = (() => {
+
+  let state = {
+    properties: [],
+    totalResults: 0,
+    isDemo: true,
+    loading: false,
+    page: 1,
+    sort: 'newest',
+    sortKey: null,
+    sortDir: 'asc',
+  };
+
+  function init() {
+    Table.buildHeaders();
+
+    // Load saved API key
+    try {
+      const saved = localStorage.getItem('vres_api_key');
+      if (saved) document.getElementById('api-key-input').value = saved;
+    } catch(e) {}
+
+    document.getElementById('api-key-input').addEventListener('input', function() {
+      try { localStorage.setItem('vres_api_key', this.value); } catch(e) {}
+    });
+
+    document.getElementById('loc').addEventListener('keydown', e => {
+      if (e.key === 'Enter') doSearch();
+    });
+
+    doSearch({ demo: true });
+    updateCalc();
+  }
+
+  async function doSearch({ keepPage = false, demo = false } = {}) {
+    if (!keepPage) state.page = 1;
+
+    const params = {
+      location: document.getElementById('loc').value.trim() || 'Texas',
+      unitType:  document.getElementById('unit-type').value,
+      minPrice:  parsePrice(document.getElementById('min-price').value),
+      maxPrice:  parsePrice(document.getElementById('max-price').value),
+      minBeds:   parseInt(document.getElementById('min-beds').value) || 0,
+      sort:      state.sort,
+      page:      state.page,
+      apiKey:    (document.getElementById('api-key-input').value || '').trim(),
+    };
+
+    state.loading = true;
+    setLoading(true);
+
+    try {
+      const result = await PropertyAPI.search(params);
+      state.properties   = result.properties;
+      state.totalResults = result.total;
+      state.isDemo       = result.demo;
+
+      if (state.sortKey) {
+        state.properties = Table.sortData(state.properties, state.sortKey, state.sortDir);
+      }
+
+      renderResults();
+      document.getElementById('demo-banner').style.display = result.demo ? 'block' : 'none';
+
+      if (result.error) toast('API error – showing demo data. Check your API key.', 'error');
+
+    } catch (err) {
+      toast('Search failed: ' + err.message, 'error');
+    } finally {
+      state.loading = false;
+      setLoading(false);
+    }
+  }
+
+  function renderResults() {
+    const { properties, page } = state;
+    const perPage = 20;
+    const pageProps = properties.slice((page - 1) * perPage, page * perPage);
+    const start     = (page - 1) * perPage + 1;
+
+    const el = document.getElementById('result-count');
+    el.innerHTML = properties.length
+      ? `<strong>${properties.length}</strong> VA-eligible multi-unit properties found`
+      : 'No properties found';
+
+    Table.render(pageProps, start);
+    renderPagination(properties.length, page, perPage);
+
+    const toolbar = document.getElementById('toolbar');
+    toolbar.style.display = properties.length ? 'flex' : 'none';
+  }
+
+  function renderPagination(total, page, perPage) {
+    const pages = Math.ceil(total / perPage);
+    const el    = document.getElementById('pagination');
+    if (!el) return;
+    el.style.display = pages > 1 ? 'flex' : 'none';
+    if (pages <= 1) return;
+
+    const btns = [];
+    btns.push(`<button class="page-btn" onclick="App.goPage(${page-1})" ${page===1?'disabled':''}>‹</button>`);
+    for (let i = 1; i <= pages; i++) {
+      if (pages > 7 && Math.abs(i - page) > 2 && i !== 1 && i !== pages) {
+        if (i === 2 || i === pages - 1) btns.push('<span style="align-self:center;color:var(--gray-mid)">…</span>');
+        continue;
+      }
+      btns.push(`<button class="page-btn ${i===page?'active':''}" onclick="App.goPage(${i})">${i}</button>`);
+    }
+    btns.push(`<button class="page-btn" onclick="App.goPage(${page+1})" ${page===pages?'disabled':''}>›</button>`);
+    el.innerHTML = btns.join('');
+  }
+
+  function goPage(p) {
+    const max = Math.ceil(state.properties.length / 20);
+    if (p < 1 || p > max) return;
+    state.page = p;
+    renderResults();
+    document.getElementById('results-table').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function applyClientSort() {
+    state.sortKey = Table.getSortKey();
+    state.sortDir = Table.getSortDir();
+    if (state.sortKey) {
+      state.properties = Table.sortData(state.properties, state.sortKey, state.sortDir);
+    }
+    const start = (state.page - 1) * 20 + 1;
+    Table.render(state.properties.slice((state.page - 1) * 20, state.page * 20), start);
+  }
+
+  function loadCalc(zpid) {
+    const prop = state.properties.find(p => String(p.zpid) === String(zpid));
+    if (!prop) return;
+    document.getElementById('calc-price').value = prop.price.toLocaleString('en-US');
+    updateCalc();
+    // Open calculator panel if collapsed
+    const body = document.getElementById('calc-body');
+    if (!body.classList.contains('open')) toggleCalc();
+    document.getElementById('calc-body').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    toast(`Calculator set to ${prop.address.street}`, 'success');
+  }
+
+  function setLoading(loading) {
+    const btn = document.getElementById('search-btn');
+    btn.disabled     = loading;
+    btn.textContent  = loading ? 'Searching…' : '🔍 Search';
+
+    if (loading) {
+      document.getElementById('results-tbody').innerHTML = `
+        <tr><td colspan="8" style="padding:0">
+          <div class="state-panel">
+            <div class="spinner"></div>
+            <p>Searching for VA-eligible properties…</p>
+          </div>
+        </td></tr>`;
+      document.getElementById('toolbar').style.display = 'none';
+    }
+  }
+
+  function parsePrice(v) {
+    if (!v) return 0;
+    return parseInt(String(v).replace(/[^0-9]/g, '')) || 0;
+  }
+
+  function toast(msg, type = 'info') {
+    const c  = document.getElementById('toast-container');
+    const el = document.createElement('div');
+    el.className   = `toast ${type}`;
+    el.textContent = msg;
+    c.appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+  }
+
+  return { init, doSearch, goPage, applyClientSort, loadCalc };
+})();
+
+
+/* =============================================
+   GLOBAL HELPERS (called from inline event handlers)
+   ============================================= */
+
+function doSearch() { App.doSearch(); }
+
+function clearSearch() {
+  document.getElementById('loc').value       = '';
+  document.getElementById('unit-type').value = 'all';
+  document.getElementById('min-price').value = '';
+  document.getElementById('max-price').value = '';
+  document.getElementById('min-beds').value  = '';
+  App.doSearch({ demo: true });
+}
+
+function onSortChange() {
+  const v = document.getElementById('sort-sel').value;
+  App.doSearch({ keepPage: false });
+}
+
+function exportCSV() {
+  // Re-invoke Table.exportCSV with current properties by triggering a fresh sort pass
+  // We access current state indirectly via the DOM. Build from last render:
+  const rows = document.querySelectorAll('#results-tbody tr[data-zpid]');
+  if (!rows.length) { alert('No results to export.'); return; }
+  // Fall back: trigger full export from API state exposed via re-search
+  App.doSearch({ keepPage: true });
+  // Table module handles this after data load; use a simpler direct CSV approach:
+  const tbody = document.getElementById('results-tbody');
+  const trs   = [...tbody.querySelectorAll('tr[data-zpid]')];
+  const hdrs  = ['#','Address','City/State','Type','List Price','Bd/Ba','Est VA Pmt/mo','Est Rental/mo'];
+  const csvRows = trs.map((tr, i) => {
+    const cells = [...tr.querySelectorAll('td')];
+    return [
+      i + 1,
+      cells[1]?.querySelector('.addr-main')?.textContent || '',
+      cells[1]?.querySelector('.addr-sub')?.textContent  || '',
+      cells[2]?.textContent?.trim() || '',
+      cells[3]?.textContent?.trim() || '',
+      cells[4]?.textContent?.trim() || '',
+      cells[5]?.textContent?.trim() || '',
+      cells[6]?.textContent?.trim() || '',
+    ];
+  });
+  const csv  = [hdrs, ...csvRows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), {
+    href: url, download: `VRES-VA-Properties-${new Date().toISOString().slice(0,10)}.csv`,
+  });
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function toggleApiPanel() {
+  const panel = document.getElementById('api-panel');
+  panel.classList.toggle('hidden');
+}
+
+function toggleCalc() {
+  const body  = document.getElementById('calc-body');
+  const arrow = document.getElementById('calc-toggle-arrow');
+  const open  = body.classList.toggle('open');
+  arrow.textContent = open ? '▲ Collapse' : '▼ Expand';
+}
+
+function setTerm(btn) {
+  document.querySelectorAll('.term-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('calc-term').value = btn.dataset.term;
+  const lbl = document.getElementById('cb-total-lbl');
+  if (lbl) lbl.textContent = `Total paid (${btn.dataset.term} yr)`;
+  updateCalc();
+}
+
+function updateCalc() {
+  const parseP = v => parseInt(String(v).replace(/[^0-9]/g,'')) || 0;
+  const price   = parseP(document.getElementById('calc-price').value)    || 400000;
+  const downPct = (parseFloat(document.getElementById('calc-down').value)  || 0) / 100;
+  const rate    = (parseFloat(document.getElementById('calc-rate').value)  || 6.5) / 100;
+  const term    = parseInt(document.getElementById('calc-term').value)     || 30;
+  const useType = document.getElementById('calc-use').value                || 'first';
+  const exempt  = document.getElementById('calc-exempt').checked;
+
+  const r = VALoan.calculate({ purchasePrice: price, downPaymentPct: downPct, annualRate: rate, termYears: term, useType, exempt });
+  const fmt = n => n ? '$' + Math.round(n).toLocaleString('en-US') : '$0';
+
+  document.getElementById('calc-payment').textContent = fmt(r.monthlyPayment);
+  document.getElementById('cb-down').textContent      = fmt(r.downPayment);
+  document.getElementById('cb-loan').textContent      = fmt(r.totalLoan);
+  document.getElementById('cb-fee').textContent       = fmt(r.fundingFee);
+  document.getElementById('cb-fee-pct').textContent   = (r.feeRate * 100).toFixed(2) + '%';
+  document.getElementById('cb-total').textContent     = fmt(r.totalPaid);
+}
+
+/* ===== Boot ===== */
+document.addEventListener('DOMContentLoaded', App.init);
+</script>
+</body>
+</html>
