@@ -17,6 +17,10 @@ h1{font-size:22px;margin:0 0 4px}.sub{color:var(--mute);font-size:13px;margin-bo
 .fresh.stale{background:var(--warn)}
 .bar{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:8px;margin-bottom:12px}
 @media (max-width:720px){.bar{grid-template-columns:1fr 1fr}.bar input[type=search]{grid-column:1/-1}}
+.bar2{display:grid;grid-template-columns:auto 130px 160px 1fr;gap:8px;align-items:center;margin:-4px 0 12px}
+.bar2 label{font-size:14px;font-weight:600}.zipmsg{font-size:13px;color:var(--mute)}.zipmsg.err{color:var(--warn)}
+@media (max-width:720px){.bar2{grid-template-columns:auto 1fr 1fr}.zipmsg{grid-column:1/-1}}
+.tag.dist{background:var(--accent);color:#fff}
 input,select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
 .count{color:var(--mute);font-size:13px;margin:6px 0 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .count button{background:none;border:1px solid var(--line);border-radius:8px;color:var(--accent);padding:4px 10px;font:inherit;font-size:13px;cursor:pointer}
@@ -37,7 +41,13 @@ input,select{width:100%;padding:9px 10px;border:1px solid var(--line);border-rad
 <select id="type"><option value="">All types</option><option>Duplex</option><option>Triplex</option><option>Fourplex</option></select>
 <select id="state"><option value="">All states</option></select>
 <input type="number" id="max" placeholder="Max price $" min="0" step="10000">
-<select id="sort"><option value="pa">Price: low → high</option><option value="pd">Price: high → low</option><option value="ppu">Price per unit</option><option value="st">State</option></select>
+<select id="sort"><option value="pa">Price: low → high</option><option value="pd">Price: high → low</option><option value="ppu">Price per unit</option><option value="st">State</option><option value="near">Nearest first</option></select>
+</div>
+<div class="bar2">
+<label for="zip">📍 Near ZIP</label>
+<input type="text" id="zip" inputmode="numeric" maxlength="5" placeholder="e.g. 43221" autocomplete="postal-code">
+<select id="radius" aria-label="Distance"><option value="10">within 10 mi</option><option value="25">within 25 mi</option><option value="50" selected>within 50 mi</option><option value="100">within 100 mi</option><option value="250">within 250 mi</option><option value="0">any distance</option></select>
+<span id="zipmsg" class="zipmsg"></span>
 </div>
 <div class="count"><span id="count"></span><button id="reset" type="button">Clear filters</button></div>
 <div class="grid" id="grid"><div class="msg">Loading…</div></div>
@@ -50,13 +60,33 @@ var REPO='CABLE73/VRES',BRANCH='live-listings',PATH='data/listings.json';
 var bust=Math.floor(Date.now()/600000); // new URL every 10 minutes, so the CDN cache never serves old data for long
 var SOURCES=['https://raw.githubusercontent.com/'+REPO+'/'+BRANCH+'/'+PATH+'?v='+bust,
              'https://cdn.jsdelivr.net/gh/'+REPO+'@'+BRANCH+'/'+PATH];
-var DATA=[],PAGE=60,shown=PAGE,last=[];
+var ZIP_SOURCES=['https://raw.githubusercontent.com/'+REPO+'/'+BRANCH+'/data/zips.json',
+                 'https://cdn.jsdelivr.net/gh/'+REPO+'@'+BRANCH+'/data/zips.json'];
+var DATA=[],PAGE=60,shown=PAGE,last=[],ZIPS=null,zipLoading=null,origin=null;
+// Great-circle ("as the crow flies") distance in miles between two [lat,lon] points (haversine formula).
+function miles(a,b){var R=3958.8,r=Math.PI/180,dLa=(b[0]-a[0])*r,dLo=(b[1]-a[1])*r,
+ h=Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dLo/2)*Math.sin(dLo/2);
+ return 2*R*Math.asin(Math.sqrt(h))}
+function getJSON(list,i){i=i||0;if(i>=list.length)return Promise.reject('all sources failed');
+ return fetch(list[i]).then(function(r){if(!r.ok)throw r.status;return r.json()}).catch(function(){return getJSON(list,i+1)})}
+function loadZips(){if(ZIPS)return Promise.resolve(ZIPS);
+ if(!zipLoading)zipLoading=getJSON(ZIP_SOURCES).then(function(z){ZIPS=z;return z});return zipLoading}
+function onZip(){
+ var z=$('zip').value.replace(/\D/g,'').slice(0,5),msg=$('zipmsg');msg.className='zipmsg';
+ if(z.length<5){origin=null;msg.textContent=z.length?'Enter all 5 digits':'';if($('sort').value==='near')$('sort').value='pa';render();return}
+ msg.textContent='Finding '+z+'…';
+ loadZips().then(function(Z){
+  if($('zip').value.replace(/\D/g,'').slice(0,5)!==z)return; // user kept typing
+  if(!Z[z]){origin=null;msg.className='zipmsg err';msg.textContent='ZIP '+z+' not found';render();return}
+  origin=Z[z];DATA.forEach(function(d){var p=Z[d.zip];d._mi=p?miles(origin,p):null});
+  $('sort').value='near';render()
+ }).catch(function(){msg.className='zipmsg err';msg.textContent='Distance search unavailable right now'})}
 function $(id){return document.getElementById(id)}
 function fmt(n){return '$'+Number(n).toLocaleString('en-US')}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function card(d){var direct=String(d.url).indexOf('google.com/search')<0;
  return '<div class="card"><div class="price">'+fmt(d.price)+'</div><div class="addr">'+esc(d.address)+'</div><div class="loc">'+esc(d.city)+', '+esc(d.state)+' '+esc(d.zip)+'</div>'+
- '<div class="tags"><span class="tag">'+esc(d.type)+'</span><span class="tag">'+fmt(Math.round(d.price/(d.units||1)))+'/unit</span>'+
+ '<div class="tags">'+(origin&&d._mi!=null?'<span class="tag dist">'+(d._mi<1?'&lt;1':Math.round(d._mi))+' mi away</span>':'')+'<span class="tag">'+esc(d.type)+'</span><span class="tag">'+fmt(Math.round(d.price/(d.units||1)))+'/unit</span>'+
  (d.sqft?'<span class="tag">'+Number(d.sqft).toLocaleString()+' sqft</span>':'')+(d.note?'<span class="tag warn">'+esc(d.note)+'</span>':'')+'</div>'+
  '<a class="go" href="'+esc(d.url)+'" target="_blank" rel="noopener">'+(direct?'View listing →':'Search this address →')+'</a></div>'}
 function draw(){$('grid').innerHTML=last.length?last.slice(0,shown).map(card).join(''):'<div class="msg">No listings match these filters.</div>';
@@ -64,9 +94,15 @@ function draw(){$('grid').innerHTML=last.length?last.slice(0,shown).map(card).jo
  $('count').textContent='Showing '+Math.min(shown,last.length)+' of '+last.length+' matches ('+DATA.length+' total)'}
 function render(){
  var words=$('q').value.toLowerCase().split(/\s+/).filter(Boolean),t=$('type').value,s=$('state').value,m=+$('max').value||Infinity,so=$('sort').value;
+ var rad=+$('radius').value||Infinity;
  last=DATA.filter(function(d){var hay=[d.type,d.address,d.city,d.state,d.zip,d.note,d.units+' units'].join(' ').toLowerCase();
-  return(!t||d.type===t)&&(!s||d.state===s)&&d.price<=m&&words.every(function(w){return hay.indexOf(w)>-1})});
- last.sort(so==='pa'?function(a,b){return a.price-b.price}:so==='pd'?function(a,b){return b.price-a.price}:so==='ppu'?function(a,b){return a.price/a.units-b.price/b.units}:function(a,b){return a.state.localeCompare(b.state)||a.price-b.price});
+  return(!t||d.type===t)&&(!s||d.state===s)&&d.price<=m&&words.every(function(w){return hay.indexOf(w)>-1})&&
+   (!origin||(d._mi!=null&&d._mi<=rad))});
+ if(so==='near'&&!origin)so='pa';
+ if(origin){var z=$('zip').value,msg=$('zipmsg');msg.className='zipmsg';
+  msg.textContent=last.length?last.length+' listing'+(last.length>1?'s':'')+' '+(rad===Infinity?'sorted by distance from ':'within '+rad+' mi of ')+z:
+   'Nothing within '+rad+' mi of '+z+' — try a wider distance'}
+ last.sort(so==='near'?function(a,b){return(a._mi==null?1e9:a._mi)-(b._mi==null?1e9:b._mi)}:so==='pa'?function(a,b){return a.price-b.price}:so==='pd'?function(a,b){return b.price-a.price}:so==='ppu'?function(a,b){return a.price/a.units-b.price/b.units}:function(a,b){return a.state.localeCompare(b.state)||a.price-b.price});
  shown=PAGE;draw()}
 function start(j){
  DATA=(j.listings||[]).filter(function(d){return d&&d.price>0});
@@ -79,8 +115,9 @@ function load(i){
  if(i>=SOURCES.length){$('sub').textContent='';$('grid').innerHTML='<div class="msg">Listings could not be loaded right now. Please refresh in a minute.</div>';return}
  fetch(SOURCES[i],{cache:'no-store'}).then(function(r){if(!r.ok)throw r.status;return r.json()}).then(start).catch(function(){load(i+1)})}
 $('more').addEventListener('click',function(){shown+=PAGE;draw()});
-$('reset').addEventListener('click',function(){['q','type','state','max'].forEach(function(i){$(i).value=''});$('sort').value='pa';render()});
-['q','type','state','max','sort'].forEach(function(i){$(i).addEventListener('input',render)});
+$('reset').addEventListener('click',function(){['q','type','state','max','zip'].forEach(function(i){$(i).value=''});$('radius').value='50';origin=null;$('zipmsg').textContent='';$('sort').value='pa';render()});
+['q','type','state','max','sort','radius'].forEach(function(i){$(i).addEventListener('input',render)});
+$('zip').addEventListener('input',onZip);
 load(0);
 })();
 </script>
