@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VetsREI 2–4 Unit Listings</title>
+<!--
+  VetsREI live listings widget.
+  Paste this whole file ONCE into a Wix "Embed HTML" element (Code mode).
+  It loads data/listings.json from GitHub on every page view, so the page
+  updates itself whenever the daily scan pushes new data. No daily Wix edits.
+-->
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1b2430;--mute:#5b6675;--line:#dfe3e8;--accent:#1f4e8c;--tag:#e8eef7;--warn:#b45309;--ok:#15803d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px}
+h1{font-size:22px;margin:0 0 4px}.sub{color:var(--mute);font-size:13px;margin-bottom:6px}
+.va{font-size:13px;background:var(--tag);border-radius:8px;padding:8px 12px;margin:8px 0 14px}
+.fresh{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:6px;vertical-align:middle}
+.fresh.stale{background:var(--warn)}
+.bar{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+@media (max-width:720px){.bar{grid-template-columns:1fr 1fr}.bar input[type=search]{grid-column:1/-1}}
+input,select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
+.count{color:var(--mute);font-size:13px;margin:6px 0 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.count button{background:none;border:1px solid var(--line);border-radius:8px;color:var(--accent);padding:4px 10px;font:inherit;font-size:13px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.price{font-size:19px;font-weight:700}.addr{font-weight:600}.loc{color:var(--mute);font-size:13px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}.tag{background:var(--tag);border-radius:999px;padding:2px 8px;font-size:12px}
+.tag.warn{color:var(--warn)}a.go{margin-top:auto;padding-top:8px;color:var(--accent);font-weight:600;text-decoration:none;font-size:14px}
+#more{display:none;margin:14px auto 0;padding:9px 18px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--accent);font:inherit;font-weight:600;cursor:pointer}
+.msg{padding:30px;text-align:center;color:var(--mute)}
+.note{font-size:12px;color:var(--mute);border-top:1px solid var(--line);margin-top:18px;padding-top:10px}
+</style></head><body><div class="wrap">
+<h1>2–4 Unit Homes for Sale</h1>
+<div class="sub" id="sub">Loading today's listings…</div>
+<div class="va">Every duplex, triplex and fourplex here is a property type a VA loan can finance — as long as you live in one of the units. Triplexes and fourplexes must also pass the VA self-sufficiency test.</div>
+<div class="bar">
+<input type="search" id="q" placeholder="Search: city, street, ZIP, leased, new construction…">
+<select id="type"><option value="">All types</option><option>Duplex</option><option>Triplex</option><option>Fourplex</option></select>
+<select id="state"><option value="">All states</option></select>
+<input type="number" id="max" placeholder="Max price $" min="0" step="10000">
+<select id="sort"><option value="pa">Price: low → high</option><option value="pd">Price: high → low</option><option value="ppu">Price per unit</option><option value="st">State</option></select>
+</div>
+<div class="count"><span id="count"></span><button id="reset" type="button">Clear filters</button></div>
+<div class="grid" id="grid"><div class="msg">Loading…</div></div>
+<button id="more" type="button">Show more</button>
+<div class="note" id="note">Listings are a daily sample of public listing sites, not a full MLS feed. Prices and availability change — confirm every listing with the listing agent. VetsREI is not a lender or broker.</div>
+</div>
+<script>
+(function(){
+var REPO='CABLE73/VRES',BRANCH='live-listings',PATH='data/listings.json';
+var bust=Math.floor(Date.now()/600000); // new URL every 10 minutes, so the CDN cache never serves old data for long
+var SOURCES=['https://raw.githubusercontent.com/'+REPO+'/'+BRANCH+'/'+PATH+'?v='+bust,
+             'https://cdn.jsdelivr.net/gh/'+REPO+'@'+BRANCH+'/'+PATH];
+var DATA=[],PAGE=60,shown=PAGE,last=[];
+function $(id){return document.getElementById(id)}
+function fmt(n){return '$'+Number(n).toLocaleString('en-US')}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function card(d){var direct=String(d.url).indexOf('google.com/search')<0;
+ return '<div class="card"><div class="price">'+fmt(d.price)+'</div><div class="addr">'+esc(d.address)+'</div><div class="loc">'+esc(d.city)+', '+esc(d.state)+' '+esc(d.zip)+'</div>'+
+ '<div class="tags"><span class="tag">'+esc(d.type)+'</span><span class="tag">'+fmt(Math.round(d.price/(d.units||1)))+'/unit</span>'+
+ (d.sqft?'<span class="tag">'+Number(d.sqft).toLocaleString()+' sqft</span>':'')+(d.note?'<span class="tag warn">'+esc(d.note)+'</span>':'')+'</div>'+
+ '<a class="go" href="'+esc(d.url)+'" target="_blank" rel="noopener">'+(direct?'View listing →':'Search this address →')+'</a></div>'}
+function draw(){$('grid').innerHTML=last.length?last.slice(0,shown).map(card).join(''):'<div class="msg">No listings match these filters.</div>';
+ $('more').style.display=last.length>shown?'block':'none';
+ $('count').textContent='Showing '+Math.min(shown,last.length)+' of '+last.length+' matches ('+DATA.length+' total)'}
+function render(){
+ var words=$('q').value.toLowerCase().split(/\s+/).filter(Boolean),t=$('type').value,s=$('state').value,m=+$('max').value||Infinity,so=$('sort').value;
+ last=DATA.filter(function(d){var hay=[d.type,d.address,d.city,d.state,d.zip,d.note,d.units+' units'].join(' ').toLowerCase();
+  return(!t||d.type===t)&&(!s||d.state===s)&&d.price<=m&&words.every(function(w){return hay.indexOf(w)>-1})});
+ last.sort(so==='pa'?function(a,b){return a.price-b.price}:so==='pd'?function(a,b){return b.price-a.price}:so==='ppu'?function(a,b){return a.price/a.units-b.price/b.units}:function(a,b){return a.state.localeCompare(b.state)||a.price-b.price});
+ shown=PAGE;draw()}
+function start(j){
+ DATA=(j.listings||[]).filter(function(d){return d&&d.price>0});
+ var states={};DATA.forEach(function(d){states[d.state]=1});
+ Object.keys(states).sort().forEach(function(s){var o=document.createElement('option');o.textContent=s;$('state').appendChild(o)});
+ var upd=j.updated||'',age=upd?(Date.now()-Date.parse(upd+'T12:00:00Z'))/864e5:99;
+ $('sub').innerHTML='<span class="fresh'+(age>2?' stale':'')+'"></span>Updated '+esc(upd)+' · '+DATA.length.toLocaleString()+' listings across '+Object.keys(states).length+' states · Duplex, Triplex &amp; Fourplex';
+ render()}
+function load(i){
+ if(i>=SOURCES.length){$('sub').textContent='';$('grid').innerHTML='<div class="msg">Listings could not be loaded right now. Please refresh in a minute.</div>';return}
+ fetch(SOURCES[i],{cache:'no-store'}).then(function(r){if(!r.ok)throw r.status;return r.json()}).then(start).catch(function(){load(i+1)})}
+$('more').addEventListener('click',function(){shown+=PAGE;draw()});
+$('reset').addEventListener('click',function(){['q','type','state','max'].forEach(function(i){$(i).value=''});$('sort').value='pa';render()});
+['q','type','state','max','sort'].forEach(function(i){$(i).addEventListener('input',render)});
+load(0);
+})();
+</script>
+</body></html>
