@@ -10,3 +10,6 @@ How www.vetsrei.com/properties-2 stays current without anyone touching Wix:
    `https://raw.githubusercontent.com/CABLE73/VRES/live-listings/data/listings.json` (jsDelivr as a fallback) and renders it.
 
 Visitors see new data within ~10 minutes of the push. The widget only needs re-pasting into Wix if its own design/code changes.
+
+## Near-ZIP search
+Visitors can type a ZIP and pick a radius (10–250 mi). The widget lazily loads `data/zips.json` (41,917 ZIP centroids, ~240 KB gzipped, from the open-source `zipcodes` package) only when a ZIP is entered, then measures straight-line (haversine) miles from that ZIP's center to each listing's ZIP center. Distances are approximate (ZIP center to ZIP center, not driving distance).
