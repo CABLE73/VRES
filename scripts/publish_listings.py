@@ -76,7 +76,7 @@ def main():
         print(f"REFUSED: scan has {len(out)} listings vs {prev} currently live (<50%). Not publishing.")
         sys.exit(2)
     doc = {"updated": date,
-           "generated_at": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+           "generated_at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
            "source": "Public duplex/triplex/fourplex listing pages (daily sample, not a full MLS feed)",
            "count": len(out), "listings": out}
     with open(OUT, "w") as f:
